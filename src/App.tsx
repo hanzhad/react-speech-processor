@@ -3,7 +3,7 @@ import './App.css';
 import {Controls} from './components/Controls';
 import {CurrentlyReading} from './components/CurrentlyReading';
 import {fetchContent, parseContentIntoSentences} from "./lib/content";
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect, useMemo, useState} from "react";
 import {useSpeech} from "./lib/useSpeech";
 
 const loadContent = async () => {
@@ -14,7 +14,11 @@ const loadContent = async () => {
 
 function App() {
     const [sentences, setSentences] = useState<Array<string>>([]);
-    const {noSentences, playbackState, pause, play} = useSpeech(sentences);
+
+    const textForSpeech = useMemo(() => [...sentences].join(" "), [sentences])
+
+    const { currentWordRange, playbackState, pause, play} = useSpeech(textForSpeech);
+
 
 
     const loadContentHandler = useCallback(() => {
@@ -28,16 +32,20 @@ function App() {
     return (
         <div className="App">
             <h1>Text to speech</h1>
-            <div>
-                {/*<CurrentlyReading/>*/}
-            </div>
+            <div>{playbackState}</div>
             <div>
                 <Controls
-                    noSentences={noSentences}
                     state={playbackState}
                     pause={pause}
                     play={play}
                     loadNewContent={loadContentHandler}
+                />
+            </div>
+            <div>
+                <CurrentlyReading
+                    currentWordRange={currentWordRange}
+                    sentences={sentences}
+                    textForSpeech={textForSpeech}
                 />
             </div>
         </div>

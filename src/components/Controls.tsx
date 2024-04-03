@@ -8,7 +8,6 @@ import {PlayingState} from '../lib/speech';
  * - A button with text "Load new content" that loads new content from the API
  */
 export const Controls = (props: {
-    noSentences: boolean;
     play: () => void;
     pause: () => void;
     loadNewContent: () => void;
@@ -20,12 +19,16 @@ export const Controls = (props: {
         loadNewContent,
     } = props;
 
-    console.log('props.state', props.state)
+    const isPlay = props.state !== "ended" && props.state !== "playing"
+    const isPause = props.state !== "ended" && props.state !== "paused" && props.state !== "initialized"
+
     return (
         <div>
-            <button disabled={props.noSentences || props.state === "paused"} onClick={play}>play</button>
-            <button disabled={props.noSentences || props.state === "initialized"} onClick={pause}>pause</button>
+
+            {isPause && <button disabled={props.state === 'ended'} onClick={pause}>pause</button>}
+            {isPlay && <button disabled={props.state === 'ended'} onClick={play}>play</button>}
             <button disabled={props.state === "playing"} onClick={loadNewContent}>loadNewContent</button>
+
         </div>
     );
 };

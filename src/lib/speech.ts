@@ -1,6 +1,5 @@
 export type SpeechEngineOptions = {
   onBoundary: (e: SpeechSynthesisEvent) => void;
-  onEnd: (e: SpeechSynthesisEvent) => void;
   onStateUpdate: (state: PlayingState) => void;
 };
 
@@ -45,9 +44,13 @@ const createSpeechEngine = (options: SpeechEngineOptions) => {
     utterance.onboundary = (e) => options.onBoundary(e);
     utterance.onend = (e) => {
       options.onStateUpdate("ended");
-      options.onEnd(e);
     };
-
+    utterance.onpause = (e) => {
+      options.onStateUpdate("paused");
+    }
+    utterance.onresume = (e) => {
+      options.onStateUpdate("playing")
+    }
     // set it up as active utterance
     state.utterance = utterance;
   };
@@ -55,7 +58,6 @@ const createSpeechEngine = (options: SpeechEngineOptions) => {
   const play = () => {
     if (!state.utterance) throw new Error("No active utterance found to play");
     state.utterance.onstart = () => {
-      console.log('waiting for onstart')
       options.onStateUpdate("playing");
     };
     window.speechSynthesis.cancel();
@@ -63,8 +65,10 @@ const createSpeechEngine = (options: SpeechEngineOptions) => {
   };
 
   const pause = () => {
-    options.onStateUpdate("paused");
     window.speechSynthesis.pause();
+  };
+  const resume = () => {
+    window.speechSynthesis.resume();
   };
   const cancel = () => {
     options.onStateUpdate("initialized");
@@ -74,6 +78,7 @@ const createSpeechEngine = (options: SpeechEngineOptions) => {
   return {
     state,
     play,
+    resume,
     pause,
     cancel,
     load,
